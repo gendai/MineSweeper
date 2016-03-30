@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 public class CustomView extends View{
@@ -90,6 +91,31 @@ public class CustomView extends View{
         }
 
     }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        float x = e.getX();
+        float y = e.getY();
+        for (Case c : cases) {
+            if (c.Touched((int) x, (int) y)) {
+                if (c.getMine()) {
+                    Lose();
+                } else {
+                    c.Uncover();
+                }
+                invalidate();
+            }
+        }
+        return true;
+    }
+
+
+
+
+    private void Lose(){
+
+    }
 }
 
 class Case {
@@ -113,9 +139,6 @@ class Case {
         return this.mine;
     }
 
-    public void SetMark(){
-        this.state = 1;
-    }
 
     public boolean Touched(int x, int y) {
         return this.bounds.contains(x,y);
@@ -123,6 +146,10 @@ class Case {
 
     public void Draw(Canvas c){
         c.drawRect(this.bounds, getPaint());
+    }
+
+    public void Uncover(){
+        this.state = 1;
     }
 
     public Paint getPaint()
@@ -133,6 +160,11 @@ class Case {
                 p.setColor(0xFF000000);
                 p.setStyle(Paint.Style.FILL);
                 return p;
+            case 1:
+                Paint p2 = new Paint(Paint.ANTI_ALIAS_FLAG);
+                p2.setColor(0xFF808080);
+                p2.setStyle(Paint.Style.FILL);
+                return p2;
         }
         return null;
     }
