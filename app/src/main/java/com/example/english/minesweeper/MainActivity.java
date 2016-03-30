@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -24,6 +25,18 @@ public class MainActivity extends Activity {
         marked = (TextView)findViewById(R.id.MinesMarked);
         left = (TextView)findViewById(R.id.MinesLeft);
         cv = (CustomView)findViewById(R.id.CustomView);
+        reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cv.Restart();
+            }
+        });
+        mode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cv.SetMode();
+            }
+        });
     }
 
     @Override

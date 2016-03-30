@@ -11,12 +11,14 @@ import android.view.View;
 
 import java.util.Random;
 
-public class CustomView extends View{
+public class CustomView extends View {
 
     private Paint black, white;
     private Case[] cases;
     private Random r = new Random();
     private int minesl = 20;
+    private boolean touchable = true;
+    private boolean Uncmod = true;
 
     public CustomView(Context c) {
         super(c);
@@ -46,8 +48,20 @@ public class CustomView extends View{
         }
     }
 
-    private void init()
-    {
+    public void Restart() {
+        touchable = true;
+        this.invalidate();
+        cases = null;
+        minesl = 20;
+        init();
+
+    }
+
+    public void SetMode() {
+        Uncmod = !Uncmod;
+    }
+
+    private void init() {
         black = new Paint(Paint.ANTI_ALIAS_FLAG);
         white = new Paint(Paint.ANTI_ALIAS_FLAG);
         black.setColor(0xFF000000);
@@ -57,23 +71,23 @@ public class CustomView extends View{
         int top = -60;
         int right = 60;
         int bottom = 0;
-        for (int i = 0; i < 100; i++){
-            if(i % 10 == 0){
+        for (int i = 0; i < 100; i++) {
+            if (i % 10 == 0) {
                 left = 0;
                 top += 60;
                 right = 60;
                 bottom += 60;
             }
-            cases[i] = new Case(i,RanMin(),new Rect(left,top,right,bottom));
+            cases[i] = new Case(i, RanMin(), new Rect(left, top, right, bottom));
             left += 60;
             right += 60;
         }
         int id = 0;
-        while(minesl != 0){
-            if(id == 99){
+        while (minesl != 0) {
+            if (id == 99) {
                 id = 0;
             }
-            if(!cases[id].getMine()){
+            if (!cases[id].getMine()) {
                 cases[id].setMine(RanMin());
             }
             id++;
@@ -81,45 +95,45 @@ public class CustomView extends View{
         SetNumb(cases);
     }
 
-    public void SetNumb(Case[] cs){
-        for(int i = 0; i < 100; i++){
+    public void SetNumb(Case[] cs) {
+        for (int i = 0; i < 100; i++) {
             int res = 0;
-            if(i %10 != 0 && cs[i-1].getMine()){
+            if (i % 10 != 0 && cs[i - 1].getMine()) {
                 res++;
             }
-            if(i %10 !=0 && i > 9 && cs[i- 11].getMine()){
+            if (i % 10 != 0 && i > 9 && cs[i - 11].getMine()) {
                 res++;
             }
-            if(((i+1) % 10 != 0 || i == 0) && cs[i+1].getMine()){
+            if (((i + 1) % 10 != 0 || i == 0) && cs[i + 1].getMine()) {
                 res++;
             }
-            if((i+1) % 10 !=0 && i > 9 &&cs[i-9].getMine()){
+            if ((i + 1) % 10 != 0 && i > 9 && cs[i - 9].getMine()) {
                 res++;
             }
-            if(i > 9 && cs[i - 10].getMine()){
+            if (i > 9 && cs[i - 10].getMine()) {
                 res++;
             }
-            if(i < 90 && cs[i + 10].getMine()){
+            if (i < 90 && cs[i + 10].getMine()) {
                 res++;
             }
-            if(i < 90 && i % 10 != 0 && cs[i + 9].getMine()){
+            if (i < 90 && i % 10 != 0 && cs[i + 9].getMine()) {
                 res++;
             }
-            if(i < 90 && ((i+1) % 10 !=0 || i == 0) && cs[i + 11].getMine()){
+            if (i < 90 && ((i + 1) % 10 != 0 || i == 0) && cs[i + 11].getMine()) {
                 res++;
             }
             cs[i].setNumb(res);
         }
     }
 
-    private boolean RanMin(){
-        if(minesl == 0){
+    private boolean RanMin() {
+        if (minesl == 0) {
             return false;
-        }else{
-            if(r.nextBoolean()){
+        } else {
+            if (r.nextBoolean()) {
                 minesl--;
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }
@@ -134,8 +148,8 @@ public class CustomView extends View{
         int starty = 0;
         int stopx = 60;
         int stopy = 600;
-        for(int j = 0; j < 9; j++){
-            c.drawLine(startx,starty,stopx,stopy,white);
+        for (int j = 0; j < 9; j++) {
+            c.drawLine(startx, starty, stopx, stopy, white);
             startx += 60;
             stopx = startx;
         }
@@ -143,8 +157,8 @@ public class CustomView extends View{
         starty = 60;
         stopx = 600;
         stopy = 60;
-        for (int j = 0; j < 9; j++){
-            c.drawLine(startx,starty,stopx,stopy,white);
+        for (int j = 0; j < 9; j++) {
+            c.drawLine(startx, starty, stopx, stopy, white);
             starty += 60;
             stopy = starty;
         }
@@ -154,25 +168,41 @@ public class CustomView extends View{
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        float x = e.getX();
-        float y = e.getY();
-        for (Case c : cases) {
-            if (c.Touched((int) x, (int) y)) {
-                if (c.getMine()) {
-                    c.exp();
-                    Lose();
-                } else {
-                    c.Uncover();
+        if (touchable) {
+            float x = e.getX();
+            float y = e.getY();
+            if (e.getPointerCount() > 1) {
+
+            } else {
+                for (Case c : cases) {
+                    if (this.Uncmod) {
+                        if (c.Touched((int) x, (int) y)) {
+                            if (c.getMine()) {
+                                c.exp();
+                                Lose();
+                            } else {
+                                c.Uncover();
+                            }
+                            invalidate();
+                        }
+                    } else {
+                        if (c.Touched((int) x, (int) y)) {
+                            c.Mark();
+                            invalidate();
+                        }
+                    }
                 }
-                invalidate();
+                return true;
             }
+        } else {
+            return false;
         }
         return true;
     }
 
 
     private void Lose(){
-
+        touchable = false;
     }
 }
 
@@ -240,6 +270,8 @@ class Case {
                     break;
             }
 
+        }else if(this.state == 3){
+            c.drawRect(this.bounds, getPaint());
         }else{
             c.drawRect(this.bounds, getPaint());
         }
@@ -251,6 +283,14 @@ class Case {
 
     public void exp(){
         this.state = 2;
+    }
+
+    public void Mark(){
+        if(this.state == 3){
+            this.state = 0;
+        }else {
+            this.state = 3;
+        }
     }
 
     public Paint getPaint()
@@ -271,6 +311,11 @@ class Case {
                 p3.setColor(0xFFFF0000);
                 p3.setStyle(Paint.Style.FILL);
                 return p3;
+            case 3:
+                Paint p4 = new Paint(Paint.ANTI_ALIAS_FLAG);
+                p4.setColor(0xFFFFFF00);
+                p4.setStyle(Paint.Style.FILL);
+                return p4;
         }
         return null;
     }
