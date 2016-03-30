@@ -9,10 +9,14 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.Random;
+
 public class CustomView extends View{
 
     private Paint black, white;
     private Case[] cases;
+    private Random r = new Random();
+    private int minesl = 20;
 
     public CustomView(Context c) {
         super(c);
@@ -60,9 +64,32 @@ public class CustomView extends View{
                 right = 60;
                 bottom += 60;
             }
-            cases[i] = new Case(i,false,new Rect(left,top,right,bottom));
+            cases[i] = new Case(i,RanMin(),new Rect(left,top,right,bottom));
             left += 60;
             right += 60;
+        }
+        int id = 0;
+        while(minesl != 0){
+            if(id == 99){
+                id = 0;
+            }
+            if(!cases[id].getMine()){
+                cases[id].setMine(RanMin());
+            }
+            id++;
+        }
+    }
+
+    private boolean RanMin(){
+        if(minesl == 0){
+            return false;
+        }else{
+            if(r.nextBoolean()){
+                minesl--;
+                return true;
+            }else{
+                return false;
+            }
         }
     }
 
@@ -100,6 +127,7 @@ public class CustomView extends View{
         for (Case c : cases) {
             if (c.Touched((int) x, (int) y)) {
                 if (c.getMine()) {
+                    c.exp();
                     Lose();
                 } else {
                     c.Uncover();
@@ -146,10 +174,21 @@ class Case {
 
     public void Draw(Canvas c){
         c.drawRect(this.bounds, getPaint());
+        if(this.state == 2){
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            p.setColor(0xFF000000);
+            p.setStyle(Paint.Style.FILL);
+            p.setTextSize(p.getTextSize() * 2);
+            c.drawText("M",this.bounds.centerX()-12,this.bounds.centerY()+10,p);
+        }
     }
 
     public void Uncover(){
         this.state = 1;
+    }
+
+    public void exp(){
+        this.state = 2;
     }
 
     public Paint getPaint()
@@ -165,7 +204,16 @@ class Case {
                 p2.setColor(0xFF808080);
                 p2.setStyle(Paint.Style.FILL);
                 return p2;
+            case 2:
+                Paint p3 = new Paint(Paint.ANTI_ALIAS_FLAG);
+                p3.setColor(0xFFFF0000);
+                p3.setStyle(Paint.Style.FILL);
+                return p3;
         }
         return null;
+    }
+
+    public void setMine(boolean b){
+        this.mine = b;
     }
 }
