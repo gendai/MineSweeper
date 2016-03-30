@@ -78,6 +78,38 @@ public class CustomView extends View{
             }
             id++;
         }
+        SetNumb(cases);
+    }
+
+    public void SetNumb(Case[] cs){
+        for(int i = 0; i < 100; i++){
+            int res = 0;
+            if(i %10 != 0 && cs[i-1].getMine()){
+                res++;
+            }
+            if(i %10 !=0 && i > 9 && cs[i- 11].getMine()){
+                res++;
+            }
+            if(((i+1) % 10 != 0 || i == 0) && cs[i+1].getMine()){
+                res++;
+            }
+            if((i+1) % 10 !=0 && i > 9 &&cs[i-9].getMine()){
+                res++;
+            }
+            if(i > 9 && cs[i - 10].getMine()){
+                res++;
+            }
+            if(i < 90 && cs[i + 10].getMine()){
+                res++;
+            }
+            if(i < 90 && i % 10 != 0 && cs[i + 9].getMine()){
+                res++;
+            }
+            if(i < 90 && ((i+1) % 10 !=0 || i == 0) && cs[i + 11].getMine()){
+                res++;
+            }
+            cs[i].setNumb(res);
+        }
     }
 
     private boolean RanMin(){
@@ -139,8 +171,6 @@ public class CustomView extends View{
     }
 
 
-
-
     private void Lose(){
 
     }
@@ -151,6 +181,7 @@ class Case {
     private boolean mine;
     private Rect bounds;
     private int state;
+    private int numb = 0;
 
     public Case(int id, boolean m, Rect bd){
         this.id = id;
@@ -173,13 +204,44 @@ class Case {
     }
 
     public void Draw(Canvas c){
-        c.drawRect(this.bounds, getPaint());
         if(this.state == 2){
+            c.drawRect(this.bounds, getPaint());
             Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
             p.setColor(0xFF000000);
             p.setStyle(Paint.Style.FILL);
             p.setTextSize(p.getTextSize() * 2);
             c.drawText("M",this.bounds.centerX()-12,this.bounds.centerY()+10,p);
+        }else if(this.state == 1){
+            c.drawRect(this.bounds, getPaint());
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            p.setStyle(Paint.Style.FILL);
+            switch(numb){
+                case 0:
+                    break;
+                case 1:
+                    p.setColor(0xFF0000FF);
+                    p.setTextSize(p.getTextSize() * 2);
+                    c.drawText(Integer.toString(this.numb), this.bounds.centerX()-12, this.bounds.centerY()+10, p);
+                    break;
+                case 2:
+                    p.setColor(0xFF00FF00);
+                    p.setTextSize(p.getTextSize() * 2);
+                    c.drawText(Integer.toString(this.numb), this.bounds.centerX()-12, this.bounds.centerY()+10, p);
+                    break;
+                case 3:
+                    p.setColor(0xFFFFFF00);
+                    p.setTextSize(p.getTextSize() * 2);
+                    c.drawText(Integer.toString(this.numb), this.bounds.centerX()-12, this.bounds.centerY()+10, p);
+                    break;
+                default:
+                    p.setColor(0xFFFF0000);
+                    p.setTextSize(p.getTextSize() * 2);
+                    c.drawText(Integer.toString(this.numb), this.bounds.centerX()-12, this.bounds.centerY()+10, p);
+                    break;
+            }
+
+        }else{
+            c.drawRect(this.bounds, getPaint());
         }
     }
 
@@ -215,5 +277,9 @@ class Case {
 
     public void setMine(boolean b){
         this.mine = b;
+    }
+
+    public void setNumb(int n){
+        this.numb = n;
     }
 }
