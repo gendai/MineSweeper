@@ -22,6 +22,19 @@ public class CustomView extends View{
         init();
     }
 
+
+    @Override
+    protected void onMeasure(int width, int height) {
+        super.onMeasure(width, height);
+        int widthM = getMeasuredWidth();
+        int heightM = getMeasuredHeight();
+        if (widthM > heightM) {
+            setMeasuredDimension(heightM, heightM);
+        } else {
+            setMeasuredDimension(widthM, widthM);
+        }
+    }
+
     private void init()
     {
 
