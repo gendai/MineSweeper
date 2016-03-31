@@ -8,6 +8,8 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Random;
 
@@ -19,6 +21,12 @@ public class CustomView extends View {
     private int minesl = 20;
     private boolean touchable = true;
     private boolean Uncmod = true;
+    private TextView MarkedMined;
+    private int MrkM = 0;
+
+    public void setText(TextView tv){
+        this.MarkedMined = tv;
+    }
 
     public CustomView(Context c) {
         super(c);
@@ -53,6 +61,8 @@ public class CustomView extends View {
         this.invalidate();
         cases = null;
         minesl = 20;
+        MrkM = 0;
+        MarkedMined.setText("Mines Marked : "+MrkM);
         init();
 
     }
@@ -162,7 +172,19 @@ public class CustomView extends View {
             starty += 60;
             stopy = starty;
         }
+        if(MrkM == 1 && AllUnc()){
+            Toast.makeText(this.getContext(), "You Win", Toast.LENGTH_LONG).show();
+            touchable = false;
+        }
+    }
 
+    private boolean AllUnc(){
+        for(Case c : cases){
+            if(!c.getTouched() && !c.getMine()){
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -171,31 +193,34 @@ public class CustomView extends View {
         if (touchable) {
             float x = e.getX();
             float y = e.getY();
-            if (e.getPointerCount() > 1) {
-
-            } else {
-                for (Case c : cases) {
-                    if (this.Uncmod) {
-                        if (c.Touched((int) x, (int) y)) {
-                            if (c.getMine()) {
-                                c.exp();
-                                Lose();
-                            } else {
-                                c.Uncover();
+            switch(e.getAction()){
+                case MotionEvent.ACTION_UP:
+                    for (Case c : cases) {
+                        if (this.Uncmod) {
+                            if (c.Touched((int) x, (int) y) && !c.getMark()) {
+                                if (c.getMine()) {
+                                    c.exp();
+                                    Lose();
+                                } else {
+                                    c.Uncover();
+                                }
+                                invalidate();
                             }
-                            invalidate();
-                        }
-                    } else {
-                        if (c.Touched((int) x, (int) y)) {
-                            c.Mark();
-                            invalidate();
+                        } else {
+                            if (c.Touched((int) x, (int) y)) {
+                                if(c.getMark()){
+                                    MrkM--;
+                                }else{
+                                    MrkM++;
+                                }
+                                MarkedMined.setText("Mines Marked : "+MrkM);
+                                c.Mark();
+                                invalidate();
+                            }
                         }
                     }
-                }
-                return true;
+                    return true;
             }
-        } else {
-            return false;
         }
         return true;
     }
@@ -212,6 +237,8 @@ class Case {
     private Rect bounds;
     private int state;
     private int numb = 0;
+    private boolean mark;
+    private boolean touched = false;
 
     public Case(int id, boolean m, Rect bd){
         this.id = id;
@@ -242,6 +269,7 @@ class Case {
             p.setTextSize(p.getTextSize() * 2);
             c.drawText("M",this.bounds.centerX()-12,this.bounds.centerY()+10,p);
         }else if(this.state == 1){
+            touched = true;
             c.drawRect(this.bounds, getPaint());
             Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
             p.setStyle(Paint.Style.FILL);
@@ -281,6 +309,10 @@ class Case {
         this.state = 1;
     }
 
+    public boolean getTouched(){
+        return touched;
+    }
+
     public void exp(){
         this.state = 2;
     }
@@ -288,9 +320,15 @@ class Case {
     public void Mark(){
         if(this.state == 3){
             this.state = 0;
-        }else {
+            mark = false;
+        }else if(this.state == 0){
+            mark = true;
             this.state = 3;
         }
+    }
+
+    public boolean getMark(){
+        return mark;
     }
 
     public Paint getPaint()

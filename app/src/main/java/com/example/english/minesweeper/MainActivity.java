@@ -15,6 +15,7 @@ public class MainActivity extends Activity {
     TextView marked;
     TextView left;
     CustomView cv;
+    boolean bunc = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +26,8 @@ public class MainActivity extends Activity {
         marked = (TextView)findViewById(R.id.MinesMarked);
         left = (TextView)findViewById(R.id.MinesLeft);
         cv = (CustomView)findViewById(R.id.CustomView);
+        final String unc = "Uncover Mode";
+        final String mrk = "Marking Mode";
         reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -35,8 +38,15 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 cv.SetMode();
+                bunc = !bunc;
+                if(bunc){
+                    mode.setText(unc);
+                }else{
+                    mode.setText(mrk);
+                }
             }
         });
+        cv.setText(marked);
     }
 
     @Override
