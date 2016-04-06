@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -88,21 +89,24 @@ public class CustomView extends View {
                 right = 60;
                 bottom += 60;
             }
-            cases[i] = new Case(i, RanMin(), new Rect(left, top, right, bottom));
+            cases[i] = new Case(i, false, new Rect(left, top, right, bottom));
             left += 60;
             right += 60;
         }
         int id = 0;
         while (minesl != 0) {
-            if (id == 99) {
-                id = 0;
-            }
+            id = RanCase();
             if (!cases[id].getMine()) {
                 cases[id].setMine(RanMin());
             }
-            id++;
+            //Log.d("debug","DEBUG "+Integer.toString(minesl)+" id "+Integer.toString(id));
         }
         SetNumb(cases);
+    }
+
+    public int RanCase(){
+
+        return r.nextInt(100);
     }
 
     public void SetNumb(Case[] cs) {
@@ -172,7 +176,7 @@ public class CustomView extends View {
             starty += 60;
             stopy = starty;
         }
-        if(MrkM == 1 && AllUnc()){
+        if(MrkM == 20 && AllUnc()){
             Toast.makeText(this.getContext(), "You Win", Toast.LENGTH_LONG).show();
             touchable = false;
         }
@@ -202,7 +206,11 @@ public class CustomView extends View {
                                     c.exp();
                                     Lose();
                                 } else {
-                                    c.Uncover();
+                                    if(c.getNumb() == 0){
+                                        RevealAround(c.getId());
+                                    }else{
+                                        c.Uncover();
+                                    }
                                 }
                                 invalidate();
                             }
@@ -225,9 +233,55 @@ public class CustomView extends View {
         return true;
     }
 
+    private void RevealAround(int i){
+        if(!cases[i].getRevealed()){
+            cases[i].Uncover();
+        }else{
+            return;
+        }
+        if(cases[i].getNumb() == 0) {
+            if (i % 10 != 0) {
+                RevealAround(cases[i - 1].getId());
+            }
+            if (i % 10 != 0 && i > 9) {
+                    RevealAround(cases[i - 11].getId());
+            }
+            if (((i + 1) % 10 != 0 || i == 0)) {
+                    RevealAround(cases[i + 1].getId());
+            }
+            if ((i + 1) % 10 != 0 && i > 9) {
+                    RevealAround(cases[i - 9].getId());
+            }
+            if (i > 9) {
+                    RevealAround(cases[i - 10].getId());
+            }
+            if (i < 90) {
+                    RevealAround(cases[i + 10].getId());
+            }
+            if (i < 90 && i % 10 != 0) {
+                    RevealAround(cases[i + 9].getId());
+            }
+            if (i < 90 && ((i + 1) % 10 != 0 || i == 0)) {
+                    RevealAround(cases[i + 11].getId());
+            }
+        }
+    }
 
     private void Lose(){
+        //Toast.makeText(this.getContext(), "You Loose", Toast.LENGTH_LONG).show();
         touchable = false;
+        RevealAll();
+    }
+
+    private void RevealAll(){
+            for(Case c : cases){
+                if(!c.getRevealed()){
+                    if(c.getMine()){
+                        c.exp();
+                    }
+                }
+                invalidate();
+            }
     }
 }
 
@@ -239,6 +293,7 @@ class Case {
     private int numb = 0;
     private boolean mark;
     private boolean touched = false;
+    private boolean revealed = false;
 
     public Case(int id, boolean m, Rect bd){
         this.id = id;
@@ -255,6 +310,11 @@ class Case {
         return this.mine;
     }
 
+
+    public int getNumb()
+    {
+        return numb;
+    }
 
     public boolean Touched(int x, int y) {
         return this.bounds.contains(x,y);
@@ -307,6 +367,7 @@ class Case {
 
     public void Uncover(){
         this.state = 1;
+        this.revealed = true;
     }
 
     public boolean getTouched(){
@@ -356,6 +417,10 @@ class Case {
                 return p4;
         }
         return null;
+    }
+
+    public boolean getRevealed(){
+        return this.revealed;
     }
 
     public void setMine(boolean b){
